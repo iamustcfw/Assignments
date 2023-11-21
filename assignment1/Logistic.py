@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 class LogisticRegression:
 
@@ -23,13 +24,13 @@ class LogisticRegression:
         # Implement the sigmoid function.
         ################################################################################
         
-        pass  # Remove this line when you write the code
+        return 1.0 / (1.0 + np.exp(-x))
         
         ################################################################################
         #                                 END OF YOUR CODE                             #
         ################################################################################
 
-    def fit(self, X, y, lr=0.01, tol=1e-7, max_iter=1e7):
+    def fit(self, X, y, lr, tol=1e-7, max_iter=1e5):
         """
         Fit the regression coefficients via gradient descent or other methods 
         
@@ -47,7 +48,7 @@ class LogisticRegression:
             X = np.c_[np.ones(X.shape[0]), X]
 
         # Initialize coefficients
-        self.coef_ = np.zeros(X.shape[1])
+        self.coef_ = np.matrix(np.zeros(X.shape[1])).T
         
         # List to store loss values at each iteration
         losses = []
@@ -58,13 +59,35 @@ class LogisticRegression:
         # 1. Compute the gradient 
         # 2. Apply the update rule
         # 3. Check for convergence
-        ################################################################################
+        L = 100
+        for i in range(int(max_iter)):
+            L_before = L
 
-        pass  # Remove this line when you write the code
-        
-        ################################################################################
-        #                                 END OF YOUR CODE                             #
-        ################################################################################
+            p = self.sigmoid(X.dot(self.coef_))
+            grad = np.dot((p - y).T, X / X.shape[0])
+
+            if self.penalty == 'l1':
+                grad = grad + self.gamma * np.sign(self.coef_.T) / X.shape[1]
+            elif self.penalty == 'l2':
+                grad = grad + self.gamma * self.coef_.T
+
+            grad = grad * lr
+
+            self.coef_ -= grad.T    
+
+            p = self.sigmoid(X.dot(self.coef_))
+            L = -np.sum(y.T @ np.log(p) + (1 - y.T) @ np.log(1 - p)) / X.shape[0]
+
+            if self.penalty == 'l1':
+                L += self.gamma * np.sum(np.abs(self.coef_)) / X.shape[1]
+            elif self.penalty == 'l2':
+                L += self.gamma * np.sum(np.square(self.coef_)) / 2
+
+            losses.append(L)
+
+            if np.abs(L_before - L) <= tol:
+                break                   
+
         return losses
 
     def predict(self, X):
@@ -83,13 +106,12 @@ class LogisticRegression:
 
         # Compute the linear combination of inputs and weights
         linear_output = np.dot(X, self.coef_)
-        
         ################################################################################
         # TODO:                                                                        #
         # Task3: Apply the sigmoid function to compute prediction probabilities.
         ################################################################################
 
-        pass  # Remove this line when you write the code
+        return self.sigmoid(linear_output)
         
         ################################################################################
         #                                 END OF YOUR CODE                             #
