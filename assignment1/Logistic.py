@@ -23,14 +23,14 @@ class LogisticRegression:
         # TODO:                                                                        #
         # Implement the sigmoid function.
         ################################################################################
-        
+        # x = np.asarray(x)
         return 1.0 / (1.0 + np.exp(-x))
         
         ################################################################################
         #                                 END OF YOUR CODE                             #
         ################################################################################
 
-    def fit(self, X, y, lr, tol=1e-7, max_iter=1e5):
+    def fit(self, X, y, lr, tol=1e-9, max_iter=1e5):
         """
         Fit the regression coefficients via gradient descent or other methods 
         
@@ -49,10 +49,11 @@ class LogisticRegression:
 
         # Initialize coefficients
         self.coef_ = np.matrix(np.zeros(X.shape[1])).T
-        
+        self.coef_ += 0.0001
         # List to store loss values at each iteration
         losses = []
-
+        X = np.mat(X, dtype = float)
+        y = np.mat(y, dtype = float)        
         ################################################################################
         # TODO:                                                                        #
         # Implement gradient descent with optional regularization.
@@ -63,7 +64,16 @@ class LogisticRegression:
         for i in range(int(max_iter)):
             L_before = L
 
-            p = self.sigmoid(X.dot(self.coef_))
+            temp = np.dot(X, self.coef_)
+            # p = self.sigmoid(temp)
+            # temp = np.asarray(temp)
+            temp = -1 * temp
+            # temp = np.asarray(temp)
+            temp = np.mat(temp, dtype = float)
+            temp = np.exp(temp)
+            p = 1.0 / (1.0 + temp)
+
+
             grad = np.dot((p - y).T, X / X.shape[0])
 
             if self.penalty == 'l1':
@@ -101,6 +111,8 @@ class LogisticRegression:
         Returns:
         - probs: numpy array of shape (n_samples,), prediction probabilities.
         """
+        X = np.mat(X, dtype=float)
+
         if self.fit_intercept:
             X = np.c_[np.ones(X.shape[0]), X]
 
